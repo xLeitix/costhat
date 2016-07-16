@@ -1,0 +1,43 @@
+<costhat>
+  <service backed="instance" name="a">
+    <config cost_per_instance="1"/>
+    <endpoint name="sae1">
+      <config capi="1" cio="0" coth="40" load_factor="0.01"/>
+      <callgraph>
+        <outcall endpoint="sae2" probability="1" service="a"/>
+        <outcall endpoint="sbe1" probability="1" service="b"/>
+      </callgraph>
+    </endpoint>
+    <endpoint name="sae2">
+      <config capi="2" cio="0" coth="0" load_factor="0.1"/>
+      <callgraph>
+        <outcall endpoint="sbe2" probability="1" service="b"/>
+        <outcall endpoint="sce2" probability="0.5" service="c"/>
+        <outcall endpoint="sce3" probability="0.5" service="c"/>
+      </callgraph>
+    </endpoint>
+  </service>
+  <service backed="instance" name="b">
+    <config cost_per_instance="15"/>
+    <endpoint name="sbe1">
+      <config capi="0" cio="0" coth="0" load_factor="0.1"/>
+      <callgraph>
+        <outcall endpoint="sce1" probability="2" service="c"/>
+      </callgraph>
+    </endpoint>
+    <endpoint name="sbe2">
+      <config capi="5" cio="0" coth="0" load_factor="0.0"/>
+    </endpoint>
+  </service>
+  <service backed="lambda" name="c">
+    <endpoint name="sce1">
+      <config capi="3" ccmp="2" cio="0" coth="1"/>
+    </endpoint>
+    <endpoint name="sce2">
+      <config capi="1" ccmp="0" cio="0" coth="0"/>
+    </endpoint>
+    <endpoint name="sce3">
+      <config capi="4" ccmp="0" cio="0" coth="10"/>
+    </endpoint>
+  </service>
+</costhat>

@@ -1,0 +1,75 @@
+<costhat>
+  <service backed="instance" name="frontend">
+    <config cost_per_instance="0.104"/> <!-- AWS m4.large on demand instance -->
+    <endpoint name="landing">
+      <config capi="0" cio="0" coth="0.01" load_factor="0.00002"/> <!-- m4.large instance can handle 50.000 req/hour -->
+      <callgraph>
+        <outcall service="recommend" endpoint="generate" probability="1"/>
+        <outcall service="customers" endpoint="login" probability="0.2"/>
+        <outcall service="orders" endpoint="get" probability="0.2"/>
+      </callgraph>
+    </endpoint>
+    <endpoint name="order">
+      <config capi="0" cio="0.0001" coth="0.01" load_factor="0.0002"/> <!-- order requests have some IO costs and are x10 more expensive -->
+      <callgraph>
+        <outcall service="orders" endpoint="submit" probability="1"/>
+      </callgraph>
+    </endpoint>
+  </service>
+  <service backed="lambda" name="recommend">
+    <endpoint name="generate">
+      <config capi="0.00001" cio="0.00006" coth="0.01" ccmp="0.000006668"/> <!-- requests take ~ 400 ms on 1.024 MB -->
+      <callgraph>
+        <outcall service="products" endpoint="get" probability="10" />
+      </callgraph>
+    </endpoint>
+  </service>
+  <service backed="instance" name="orders">
+    <config cost_per_instance="0.104"/> <!-- another AWS m4.large on demand instance -->
+    <endpoint name="get">
+      <config capi="0" cio="0" coth="0.0" load_factor="0.00001"/> <!-- minimal load and costs -->
+    </endpoint>
+    <endpoint name="submit">
+      <config capi="0" cio="0.0001" coth="0.01" load_factor="0.00025"/>  <!-- similar to landing/order-->
+      <callgraph>
+        <outcall service="banking_interface" endpoint="process_payment" probability="0.9" />
+        <outcall service="order_history" endpoint="save" probability="1" />
+      </callgraph>
+    </endpoint>
+  </service>
+  <service backed="instance" name="products">
+    <config cost_per_instance="0.052"/> <!-- this can run on t2.medium -->
+    <endpoint name="get">
+      <config capi="0" cio="0" coth="0.0" load_factor="0.00001"/> <!-- minimal load and costs -->
+    </endpoint>
+  </service>
+  <service backed="instance" name="customers">
+    <config cost_per_instance="0.105"/> <!-- for whatever reason this needs compute-opimized c4.large -->
+    <endpoint name="get">
+      <config capi="0" cio="0" coth="0.0" load_factor="0.00003"/> <!-- low load and costs -->
+    </endpoint>
+    <endpoint name="login">
+      <config capi="0" cio="0.0006" coth="0.0" load_factor="0.0001"/> <!-- this is pretty compute and IO intense-->
+    </endpoint>
+  </service>
+  <service backed="instance" name="order_history">
+    <config cost_per_instance="0.853"/> <!-- this runs on i2.xlarge -->
+    <endpoint name="get">
+      <config capi="0" cio="0" coth="0.0" load_factor="0.0000001"/> <!-- close to 0 load on this large machine -->
+      <callgraph>
+        <outcall service="products" endpoint="get" probability="3.2" />
+      </callgraph>
+    </endpoint>
+    <endpoint name="save">
+      <config capi="0" cio="0.0006" coth="0.0" load_factor="0.000001"/> <!-- this is pretty IO intense, but the machine is also very large -->
+      <callgraph>
+        <outcall service="products" endpoint="get" probability="3.2" />
+      </callgraph>
+    </endpoint>
+  </service>
+  <service backed="lambda" name="banking_interface"> <!-- this represents an external service -->
+    <endpoint name="process_payment">
+      <config capi="0" cio="0.0006" coth="0" ccmp="0.000002"/> <!-- each call to this thing is pretty expensive -->
+    </endpoint>
+  </service>
+</costhat>

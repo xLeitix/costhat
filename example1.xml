@@ -1,0 +1,24 @@
+<costhat>
+  <service backed="lambda" name="a">
+    <endpoint name="ea">
+      <config capi="1" ccmp="2" cio="0" coth="5"/>
+      <callgraph>
+        <outcall endpoint="eb" probability="1" service="b"/>
+        <outcall endpoint="ec" probability="4" service="c"/>
+      </callgraph>
+    </endpoint>
+  </service>
+  <service backed="lambda" name="b">
+    <endpoint name="eb">
+      <config capi="0" ccmp="1" cio="0" coth="10"/>
+      <callgraph>
+        <outcall endpoint="ec" probability="0.1" service="c"/>
+      </callgraph>
+    </endpoint>
+  </service>
+  <service backed="lambda" name="c">
+    <endpoint name="ec">
+      <config capi="1" ccmp="1" cio="1" coth="0"/>
+    </endpoint>
+  </service>
+</costhat>
